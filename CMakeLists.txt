@@ -4,7 +4,7 @@ project(MR)
 
 set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/lib/cmake)
 
-add_executable (ModelRenderer "ModelRenderer.cpp" "ModelRenderer.h")
+add_executable(ModelRenderer "main.cpp"   "Shader.h" "Shader.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ModelRenderer PROPERTY CXX_STANDARD 20)
@@ -20,3 +20,6 @@ find_package(GLEW REQUIRED)
 
 target_link_libraries(ModelRenderer glfw)
 target_link_libraries(ModelRenderer GLEW::glew)
+
+add_custom_target(copy_assets COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_dependencies(ModelRenderer copy_assets)

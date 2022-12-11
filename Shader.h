@@ -21,7 +21,7 @@ public:
 private:
 	/** Loads and returns file contents from the given filename. Does not abort on error.
 	* @param[in] filename Name of file to read.
-	* @returns The c string of the file contents upon successful read of file. Returns a NULL otherwise.
+	* @returns Returns a CPP string with the file contents.
 	*/
-	const char* loadShaderSource(const char* filePath);
+	std::string loadShaderSource(const char* filePath);
 };

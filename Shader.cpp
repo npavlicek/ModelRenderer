@@ -1,8 +1,11 @@
 #include "Shader.h"
 
 Shader::Shader(const char * vertexShaderFilePath, const char * fragmentShaderFilePath) {
-	const char* vertexSource = Shader::loadShaderSource(vertexShaderFilePath);
-	const char* fragmentSource = Shader::loadShaderSource(fragmentShaderFilePath);
+	std::string vertexSource = loadShaderSource(vertexShaderFilePath);
+	std::string fragmentSource = loadShaderSource(fragmentShaderFilePath);
+
+	const char* vertexSourceCStr = vertexSource.c_str();
+	const char* fragmentSourceCStr = fragmentSource.c_str();
 
 	unsigned int vertexShader, fragmentShader;
 
@@ -10,7 +13,7 @@ Shader::Shader(const char * vertexShaderFilePath, const char * fragmentShaderFil
 	char infoLog[512];
 
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glShaderSource(vertexShader, 1, &vertexSourceCStr, NULL);
 	glCompileShader(vertexShader);
 
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -20,7 +23,7 @@ Shader::Shader(const char * vertexShaderFilePath, const char * fragmentShaderFil
 	}
 
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glShaderSource(fragmentShader, 1, &fragmentSourceCStr, NULL);
 	glCompileShader(fragmentShader);
 
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
@@ -60,17 +63,18 @@ void Shader::setInt(const std::string& name, int value) const {
 	glUniform1i(glGetUniformLocation(programID, name.c_str()), value);
 }
 
-const char* Shader::loadShaderSource(const char* filePath) {
+std::string Shader::loadShaderSource(const char* filePath) {
 	std::ifstream file(filePath, std::ios::in | std::ios::ate);
 	if (file.is_open()) {
 		auto size = file.tellg();
 		std::string str(size, '\0');
 		file.seekg(0);
 		file.read(&str[0], size);
-		return str.c_str();
+		file.close();
+		return str;
 	}
 	else {
 		std::cout << "ERROR READING FILE: " << filePath << std::endl;
-		return NULL;
+		return std::string("");
 	}
 }

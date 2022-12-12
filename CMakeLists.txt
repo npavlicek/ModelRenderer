@@ -21,5 +21,8 @@ find_package(GLEW REQUIRED)
 target_link_libraries(ModelRenderer glfw)
 target_link_libraries(ModelRenderer GLEW::glew)
 
-add_custom_target(copy_assets COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_custom_target(copy_shaders COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_dependencies(ModelRenderer copy_shaders)
+
+add_custom_target(copy_assets COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets)
 add_dependencies(ModelRenderer copy_assets)

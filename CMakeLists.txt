@@ -17,9 +17,11 @@ endif()
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(glm REQUIRED)
 
 target_link_libraries(ModelRenderer glfw)
 target_link_libraries(ModelRenderer GLEW::glew)
+target_link_libraries(ModelRenderer glm::glm)
 
 add_custom_target(copy_shaders COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 add_dependencies(ModelRenderer copy_shaders)

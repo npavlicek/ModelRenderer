@@ -4,7 +4,7 @@ project(MR)
 
 set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/lib/cmake)
 
-add_executable(ModelRenderer "main.cpp"   "Shader.h" "Shader.cpp")
+add_executable(ModelRenderer "main.cpp"   "Shader.h" "Shader.cpp" "Camera.h" "Camera.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ModelRenderer PROPERTY CXX_STANDARD 20)

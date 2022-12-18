@@ -10,8 +10,14 @@
 #include "stb_image.h"
 
 #include "Shader.h"
+#include "Camera.h"
+
+#define WIDTH 1280
+#define HEIGHT 720
 
 using namespace std;
+
+GLFWwindow* window;
 
 float vertices[] = {
 	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -80,9 +86,20 @@ void resize_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-int main(void) {
-	GLFWwindow* window;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+	if (key == GLFW_KEY_E && action == GLFW_PRESS) {
+		if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+	}
+}
 
+int main(void) {
 	if (!glfwInit()) {
 		std::cerr << "Could not initialize GLFW!" << std::endl;
 		return -1;
@@ -96,7 +113,7 @@ int main(void) {
 	glfwGetVersion(&glfwMaj, &glfwMin, &glfwRev);
 	std::cout << "GLFW version " << glfwMaj << "." << glfwMin << "." << glfwRev << " initialized" << std::endl;
 
-	window = glfwCreateWindow(1280, 720, "Model Renderer", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Model Renderer", NULL, NULL);
 
 	if (!window) {
 		std::cerr << "Could not create the GLFW window!" << std::endl;
@@ -115,8 +132,10 @@ int main(void) {
 
 	std::cout << "GLEW version " << glewGetString(GLEW_VERSION) << " initialized" << std::endl;
 
-	glViewport(0, 0, 1280, 720);
+	glViewport(0, 0, WIDTH, HEIGHT);
 	glfwSetFramebufferSizeCallback(window, resize_callback);
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glClearColor(0.3f, 0.1f, 0.3f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -158,26 +177,32 @@ int main(void) {
 
 	stbi_image_free(data);
 
-	glm::mat4 model = glm::mat4(1.f);
-	model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.f, 0.f, 0.f));
-
-	glm::mat4 view = glm::mat4(1.f);
-	view = glm::translate(view, glm::vec3(0.f, 0.f, -10.f));
-
 	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.f), 1280.f / 720.f, 0.1f, 100.f);
+	projection = glm::perspective(glm::radians(45.f), (float) WIDTH / HEIGHT, 0.1f, 100.f);
 
 	Shader shader("./shaders/vertex.shader", "./shaders/fragment.shader");
+	Camera camera;
 
-	const double maxFPS = 60;
-	const double maxPeriod = 1 / maxFPS;
+	glm::mat4 cubeModels[10];
+	for (int i = 0; i < 10; i++) {
+		cubeModels[i] = glm::mat4(1.f);
+		cubeModels[i] = glm::translate(cubeModels[i], cubePositions[i]);
+	}
 
-	double lastTime = glfwGetTime();
+	const float maxFPS = 144;
+	const float maxPeriod = 1 / maxFPS;
+
+	float lastTime = glfwGetTime();
 
 	while (!glfwWindowShouldClose(window)) {
-		double time = glfwGetTime();
-		double deltaTime = time - lastTime;
+		float time = glfwGetTime();
+		float deltaTime = time - lastTime;
 
+		glfwPollEvents();
+
+		camera.update(window, deltaTime);
+
+		// if statement to render at specified framerate
 		if (deltaTime >= maxPeriod) {
 			lastTime = time;
 
@@ -185,28 +210,21 @@ int main(void) {
 
 			shader.use();
 
-			int viewLoc = glGetUniformLocation(shader.programID, "view");
-			view = glm::rotate(view, (float) deltaTime * glm::radians(40.f), glm::vec3(1.f, 0.3f, 0.f));
-			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-			int projectLoc = glGetUniformLocation(shader.programID, "projection");
-			glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
+			shader.setMat4("view", camera.viewMatrix());
+			shader.setMat4("projection", projection);
 
 			glBindVertexArray(VAO);
 			for (unsigned int i = 0; i < 10; i++) {
-				model = glm::mat4(1.f);
-				model = glm::translate(model, cubePositions[i]);
-				float angle = 20.f * i;
-				model = glm::rotate(model, glm::radians(angle), glm::vec3(1.f, 0.3f, 0.5f));
-				shader.setMat4("model", model);
+				if ((i % 3) == 0) {
+					cubeModels[i] = glm::rotate(cubeModels[i], deltaTime * glm::radians(40.f), glm::vec3(1.f, 0.5f, 0.3f));
+				}
+				shader.setMat4("model", cubeModels[i]);
 
 				glDrawArrays(GL_TRIANGLES, 0, 36);
 			}
 
 			glfwSwapBuffers(window);
 		}
-
-		glfwPollEvents();
 	}
 
 	glfwTerminate();

@@ -17,11 +17,13 @@ public:
 	void setSpeed(float speed);
 	void setSensitivity(float sensitivity);
 
-	glm::mat4 viewMatrix();
+	glm::vec3 getPosition() const;
+	glm::mat4 viewMatrix() const;
 private:
 	glm::vec3 up, position, front;
 	float yaw, pitch;
 	float speed;
+	bool firstUpdate;
 	
 	struct {
 		float lastX, lastY, sensitivity;

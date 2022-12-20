@@ -1,13 +1,14 @@
 #include "Camera.h"
 
 Camera::Camera() {
-	position = glm::vec3();
+	position = glm::vec3(0, 0, 5.f);
 	up = glm::vec3(0, 1.f, 0);
-	front = glm::vec3(0, 0, -1.f);
+	front = glm::vec3(0, 0, 0);
 	pitch = 0;
-	yaw = 0;
+	yaw = -90.f;
 	speed = 0.01f;
 	mouse.sensitivity = 20.f;
+	firstUpdate = true;
 }
 
 void Camera::update(GLFWwindow * const window, float delta) {
@@ -23,6 +24,12 @@ void Camera::update(GLFWwindow * const window, float delta) {
 	double mouseX, mouseY;
 	glfwGetCursorPos(window, &mouseX, &mouseY);
 
+	if (firstUpdate) {
+		mouse.lastX = mouseX;
+		mouse.lastY = mouseY;
+		firstUpdate = false;
+	}
+
 	float xOffset = mouseX - mouse.lastX;
 	float yOffset = mouse.lastY - mouseY;
 	mouse.lastX = mouseX;
@@ -33,6 +40,11 @@ void Camera::update(GLFWwindow * const window, float delta) {
 
 	yaw += xOffset * delta;
 	pitch += yOffset * delta;
+
+	if (pitch > 89.f)
+		pitch = 89.f;
+	if (pitch < -89.f)
+		pitch = -89.f;
 
 	glm::vec3 direction;
 	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -63,6 +75,10 @@ void Camera::setSensitivity(float s) {
 	mouse.sensitivity = s;
 }
 
-glm::mat4 Camera::viewMatrix() {
+glm::mat4 Camera::viewMatrix() const {
 	return glm::lookAt(position, position + front, up);
+}
+
+glm::vec3 Camera::getPosition() const {
+	return position;
 }

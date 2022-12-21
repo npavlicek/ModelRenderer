@@ -117,6 +117,7 @@ int init() {
 	std::cout << "GLEW version " << glewGetString(GLEW_VERSION) << " initialized" << std::endl;
 
 	glViewport(0, 0, WIDTH, HEIGHT);
+	glfwSwapInterval(0);
 	glfwSetFramebufferSizeCallback(window, resize_callback);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -169,9 +170,16 @@ int main(void) {
 
 	cubeShader.use();
 	cubeShader.setMat4("projection", projection);
-	cubeShader.setVec3("lightPos", lightCubePos.x, lightCubePos.y, lightCubePos.z);
-	cubeShader.setVec3("objectColor", cubeColor.x, cubeColor.y, cubeColor.z);
-	cubeShader.setVec3("lightColor", lightColor.x, lightColor.y, lightColor.z);
+
+	cubeShader.setVec3("material.ambient", 0.24725f, 0.1995f, 0.0745f);
+	cubeShader.setVec3("material.diffuse", 0.75164f, 0.60648f, 0.22648f);
+	cubeShader.setVec3("material.specular", 0.628281f, 0.555802f, 0.366065f);
+	cubeShader.setFloat("material.shininess", 0.4f * 128.f);
+
+	cubeShader.setVec3("light.position", lightCubePos);
+	cubeShader.setVec3("light.ambient", 1.f, 1.f, 1.f);
+	cubeShader.setVec3("light.diffuse", 1.f, 1.f, 1.f);
+	cubeShader.setVec3("light.specular", 1.f, 1.f, 1.f);
 
 	lightCubeShader.use();
 	lightCubeShader.setMat4("projection", projection);
@@ -181,6 +189,7 @@ int main(void) {
 	const float maxPeriod = 1 / maxFPS;
 
 	float lastTime = glfwGetTime();
+	float frames = 0, lastUpdate = glfwGetTime();
 
 	while (!glfwWindowShouldClose(window)) {
 		float time = glfwGetTime();
@@ -215,6 +224,18 @@ int main(void) {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 			glfwSwapBuffers(window);
+
+			frames++;
+		}
+
+		// Frame Counter every second
+		float timeSinceUpdate = glfwGetTime() - lastUpdate;
+		if (timeSinceUpdate >= 1) {
+			float fps = frames / timeSinceUpdate;
+			std::cout << "Total frames: " << frames << ", time passed: " << timeSinceUpdate << " seconds." << std::endl;
+			std::cout << "FPS: " << fps << std::endl;
+			frames = 0;
+			lastUpdate = glfwGetTime();
 		}
 
 		glfwPollEvents();

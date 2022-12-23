@@ -6,7 +6,7 @@ Camera::Camera() {
 	front = glm::vec3(0, 0, 0);
 	pitch = 0;
 	yaw = -90.f;
-	speed = 0.01f;
+	speed = 5.f;
 	mouse.sensitivity = 20.f;
 	firstUpdate = true;
 }
